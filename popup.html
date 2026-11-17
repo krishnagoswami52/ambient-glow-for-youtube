@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ambient Glow for YouTube</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" width="28" height="28" alt="">
+    <h1>Ambient Glow for YouTube</h1>
+    <label class="switch" title="Turn the effect on or off">
+      <input type="checkbox" id="enabled">
+      <span class="track"></span>
+    </label>
+  </header>
+
+  <main id="controls">
+    <div class="modes" role="radiogroup" aria-label="Mode">
+      <label title="The whole page is lit by the video">
+        <input type="radio" name="mode" value="immersive">
+        <span>Immersive</span>
+      </label>
+      <label title="A halo around the player only">
+        <input type="radio" name="mode" value="glow">
+        <span>Glow</span>
+      </label>
+    </div>
+
+    <div class="row">
+      <label for="intensity">Intensity</label>
+      <output id="intensity-value" for="intensity"></output>
+      <input type="range" id="intensity" step="1">
+    </div>
+    <div class="row">
+      <label for="blur">Blur</label>
+      <output id="blur-value" for="blur"></output>
+      <input type="range" id="blur" step="1">
+    </div>
+    <div class="row">
+      <label for="saturation">Saturation</label>
+      <output id="saturation-value" for="saturation"></output>
+      <input type="range" id="saturation" step="5">
+    </div>
+    <div class="row">
+      <label for="brightness">Brightness</label>
+      <output id="brightness-value" for="brightness"></output>
+      <input type="range" id="brightness" step="5">
+    </div>
+    <div class="row" data-mode="immersive">
+      <label for="dim">Dim</label>
+      <output id="dim-value" for="dim"></output>
+      <input type="range" id="dim" step="1">
+    </div>
+    <div class="row" data-mode="glow">
+      <label for="spread">Spread</label>
+      <output id="spread-value" for="spread"></output>
+      <input type="range" id="spread" step="1">
+    </div>
+  </main>
+
+  <footer>
+    <span>Changes apply instantly</span>
+    <button type="button" id="reset">Reset</button>
+  </footer>
+
+  <script src="defaults.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

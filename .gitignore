@@ -1,0 +1,26 @@
+# Build output
+*.zip
+
+# OS junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editor / tool junk
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.log
+
+# Never commit secrets
+.env
+.env.*
+*.pem
+*.key

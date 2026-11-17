@@ -1,0 +1,339 @@
+/*
+ * Ambient Glow for YouTube - page styles.
+ *
+ * Nothing in this file applies on its own. content.js switches it on with:
+ *   html[data-yag-immersive]  Immersive mode (whole page lit by the video)
+ *   [data-yag-host]           Glow mode (set on ytd-watch-flexy)
+ * and removes those attributes off /watch, in fullscreen and when the
+ * extension is switched off, which returns the page to YouTube's own styles.
+ *
+ * Every YouTube selector and variable used here is listed in README.md
+ * ("YouTube selectors and variables").
+ */
+
+/* ======================================================================
+   The layer (both modes)
+   ====================================================================== */
+
+#yag-layer {
+  pointer-events: none;     /* never intercepts clicks */
+}
+
+#yag-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  /* filter (blur / saturate / brightness) is set from content.js */
+}
+
+#yag-dim {
+  display: none;
+}
+
+/* ======================================================================
+   IMMERSIVE MODE
+   ====================================================================== */
+
+/* ---- the full-viewport canvas ---------------------------------------- */
+
+#yag-layer.yag-immersive {
+  position: fixed;
+  inset: 0;
+  z-index: -1;              /* behind every piece of YouTube content */
+  overflow: hidden;         /* the oversized canvas never causes scrollbars */
+  contain: strict;
+}
+
+/* Larger than the viewport on every side: at least 5% (so 110% overall),
+   and at least --yag-bleed (2.5x the blur radius, set from content.js), so
+   the blur's transparent fringe always falls outside the visible area. */
+.yag-immersive #yag-canvas {
+  left: calc(-1 * max(5%, var(--yag-bleed, 200px)));
+  top: calc(-1 * max(5%, var(--yag-bleed, 200px)));
+  width: calc(100% + 2 * max(5%, var(--yag-bleed, 200px)));
+  height: calc(100% + 2 * max(5%, var(--yag-bleed, 200px)));
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.yag-immersive.yag-show #yag-canvas {
+  opacity: var(--yag-opacity, 0.9);
+}
+
+/* "Dim": a veil between the glow and the page content. Dark in dark theme;
+   in light theme it is white, because YouTube's text is dark there. */
+.yag-immersive #yag-dim {
+  display: block;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, var(--yag-dim, 0.25));
+}
+
+html:not([dark]) .yag-immersive #yag-dim {
+  background: rgba(255, 255, 255, var(--yag-dim, 0.25));
+}
+
+/* ---- theme tokens ----------------------------------------------------- */
+
+html[data-yag-immersive] {
+  --yag-base: #fff;                               /* YouTube's page colour */
+  --yag-glass: rgba(255, 255, 255, 0.45);         /* frosted panels */
+  --yag-glass-strong: rgba(255, 255, 255, 0.6);   /* top bar */
+  --yag-glass-hover: rgba(255, 255, 255, 0.62);
+  --yag-glass-line: rgba(0, 0, 0, 0.08);
+  --yag-text-shadow: 0 0 2px rgba(255, 255, 255, 0.9), 0 1px 6px rgba(255, 255, 255, 0.7);
+}
+
+html[dark][data-yag-immersive] {
+  --yag-base: #0f0f0f;
+  --yag-glass: rgba(18, 18, 18, 0.38);
+  --yag-glass-strong: rgba(15, 15, 15, 0.55);
+  --yag-glass-hover: rgba(40, 40, 40, 0.5);
+  --yag-glass-line: rgba(255, 255, 255, 0.08);
+  --yag-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 8px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- page shell ------------------------------------------------------- */
+
+/* <html> keeps YouTube's solid page colour on purpose. The root background
+   is painted underneath the z-index:-1 canvas, so it never hides the glow;
+   it is what you see before the first frame and at Intensity below 100%. */
+html[data-yag-immersive] {
+  background: var(--yag-base) !important;
+}
+
+html[data-yag-immersive] body,
+html[data-yag-immersive] ytd-app,
+html[data-yag-immersive] #content.ytd-app,
+html[data-yag-immersive] #page-manager.ytd-app,
+html[data-yag-immersive] ytd-page-manager,
+html[data-yag-immersive] ytd-watch-flexy,
+html[data-yag-immersive] ytd-watch-grid,
+html[data-yag-immersive] #columns.ytd-watch-flexy,
+html[data-yag-immersive] #primary.ytd-watch-flexy,
+html[data-yag-immersive] #primary-inner.ytd-watch-flexy,
+html[data-yag-immersive] #below.ytd-watch-flexy,
+html[data-yag-immersive] #secondary.ytd-watch-flexy,
+html[data-yag-immersive] #secondary-inner.ytd-watch-flexy,
+html[data-yag-immersive] .box.ytd-watch-flexy {
+  background: transparent !important;
+}
+
+/* ---- YouTube colour variables ----------------------------------------- */
+
+/* Overridden on the watch page root rather than on <html>, so that menus,
+   dialogs and the guide drawer (which live outside it) keep solid colours.
+   The --t… names are the hashed aliases YouTube's stylesheets actually
+   reference at the time of writing (base = #0f0f0f / #fff, raised = #212121
+   / #fff); the readable names cover builds that still use them. */
+html[data-yag-immersive] ytd-watch-flexy,
+html[data-yag-immersive] ytd-watch-grid {
+  --yt-spec-base-background: transparent;
+  --yt-spec-general-background-a: transparent;
+  --yt-spec-general-background-b: transparent;
+  --yt-spec-general-background-c: transparent;
+  --yt-sys-color-baseline--base-background: transparent;
+  --yt-deprecated-general-background-a: transparent;
+  --yt-deprecated-general-background-b: transparent;
+  --yt-deprecated-general-background-c: transparent;
+  --t3e41d7b17b187f69: transparent;
+
+  --yt-spec-raised-background: var(--yag-glass);
+  --yt-sys-color-baseline--raised-background: var(--yag-glass);
+  --yt-saturated-raised-background: var(--yag-glass-hover);
+  --t518e925f61bdcb91: var(--yag-glass);
+}
+
+/* ---- top bar: frosted glass ------------------------------------------- */
+
+html[data-yag-immersive] ytd-masthead,
+html[data-yag-immersive] #container.ytd-masthead,
+html[data-yag-immersive] #frosted-glass.ytd-app {
+  background: transparent !important;
+}
+
+html[data-yag-immersive] #background.ytd-masthead {
+  background: var(--yag-glass-strong) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border-bottom: 1px solid var(--yag-glass-line);
+  opacity: 1 !important;
+}
+
+html[data-yag-immersive] ytd-masthead .ytSearchboxComponentInputBox,
+html[data-yag-immersive] ytd-masthead .ytSearchboxComponentSearchButton {
+  background-color: var(--yag-glass) !important;
+}
+
+/* ---- description box: frosted glass ----------------------------------- */
+
+html[data-yag-immersive] #description.ytd-watch-metadata {
+  background: var(--yag-glass) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  border: 1px solid var(--yag-glass-line);
+}
+
+html[data-yag-immersive] ytd-watch-metadata[description-collapsed] #description.ytd-watch-metadata:hover {
+  background: var(--yag-glass-hover) !important;
+}
+
+/* ---- chips bar above the sidebar -------------------------------------- */
+
+html[data-yag-immersive] yt-related-chip-cloud-renderer,
+html[data-yag-immersive] yt-chip-cloud-renderer,
+html[data-yag-immersive] #chips-wrapper.yt-chip-cloud-renderer,
+html[data-yag-immersive] #chips-wrapper.ytd-feed-filter-chip-bar-renderer,
+html[data-yag-immersive] #left-arrow-button.yt-chip-cloud-renderer,
+html[data-yag-immersive] #right-arrow-button.yt-chip-cloud-renderer,
+html[data-yag-immersive] ytd-watch-flexy ytd-feed-filter-chip-bar-renderer,
+html[data-yag-immersive] ytd-watch-flexy chip-bar-view-model,
+html[data-yag-immersive] ytd-watch-flexy .ytChipBarViewModelHost {
+  background: transparent !important;
+}
+
+/* The fade-out gradients beside the scroll arrows are painted in the page
+   colour; without this they show as solid blocks over the glow. */
+html[data-yag-immersive] #left-arrow.yt-chip-cloud-renderer::after,
+html[data-yag-immersive] #right-arrow.yt-chip-cloud-renderer::before,
+html[data-yag-immersive] ytd-watch-flexy #left-arrow.ytd-feed-filter-chip-bar-renderer::after,
+html[data-yag-immersive] ytd-watch-flexy #right-arrow.ytd-feed-filter-chip-bar-renderer::before {
+  background: transparent !important;
+}
+
+/* ---- sidebar / related videos ----------------------------------------- */
+
+html[data-yag-immersive] #related.ytd-watch-flexy,
+html[data-yag-immersive] ytd-watch-next-secondary-results-renderer,
+html[data-yag-immersive] ytd-watch-next-secondary-results-renderer #items,
+html[data-yag-immersive] ytd-watch-flexy ytd-item-section-renderer,
+html[data-yag-immersive] ytd-watch-flexy #header.ytd-item-section-renderer,
+html[data-yag-immersive] ytd-watch-flexy ytd-compact-video-renderer,
+html[data-yag-immersive] ytd-watch-flexy yt-lockup-view-model,
+html[data-yag-immersive] ytd-watch-flexy ytd-reel-shelf-renderer,
+html[data-yag-immersive] ytd-watch-flexy ytd-rich-shelf-renderer,
+html[data-yag-immersive] ytd-watch-flexy .button-container.ytd-rich-shelf-renderer {
+  background: transparent !important;
+}
+
+/* ---- comments --------------------------------------------------------- */
+
+html[data-yag-immersive] ytd-comments,
+html[data-yag-immersive] #comments.ytd-watch-flexy,
+html[data-yag-immersive] ytd-comments-header-renderer,
+html[data-yag-immersive] ytd-comment-thread-renderer,
+html[data-yag-immersive] ytd-comment-view-model,
+html[data-yag-immersive] ytd-comment-simplebox-renderer,
+html[data-yag-immersive] #placeholder-area.ytd-comment-simplebox-renderer {
+  background: transparent !important;
+}
+
+/* ---- playlist panel and other side panels ------------------------------ */
+
+html[data-yag-immersive] ytd-playlist-panel-renderer #container.ytd-playlist-panel-renderer,
+html[data-yag-immersive] ytd-watch-flexy ytd-engagement-panel-section-list-renderer,
+html[data-yag-immersive] ytd-watch-flexy ytd-live-chat-frame {
+  background: var(--yag-glass) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+html[data-yag-immersive] .header.ytd-playlist-panel-renderer,
+html[data-yag-immersive] .playlist-items.ytd-playlist-panel-renderer,
+html[data-yag-immersive] ytd-playlist-panel-video-renderer,
+html[data-yag-immersive] ytd-watch-flexy #content.ytd-engagement-panel-section-list-renderer,
+html[data-yag-immersive] ytd-watch-flexy #header.ytd-engagement-panel-title-header-renderer {
+  background: transparent !important;
+}
+
+html[data-yag-immersive] ytd-playlist-panel-video-renderer:hover,
+html[data-yag-immersive] ytd-playlist-panel-video-renderer[selected] {
+  background: var(--yag-glass-hover) !important;
+}
+
+/* ---- readable text on bright scenes ----------------------------------- */
+
+/* text-shadow inherits, so setting it on these containers covers the video
+   title, channel row, description, sidebar titles and metadata, comments
+   and the playlist. */
+html[data-yag-immersive] ytd-watch-metadata,
+html[data-yag-immersive] #secondary.ytd-watch-flexy,
+html[data-yag-immersive] ytd-comments,
+html[data-yag-immersive] ytd-playlist-panel-renderer,
+html[data-yag-immersive] ytd-watch-flexy ytd-engagement-panel-section-list-renderer {
+  text-shadow: var(--yag-text-shadow);
+}
+
+/* Filled buttons and chips have their own solid background: no shadow. */
+html[data-yag-immersive] ytd-watch-flexy button,
+html[data-yag-immersive] ytd-watch-flexy yt-chip-cloud-chip-renderer,
+html[data-yag-immersive] ytd-watch-flexy .ytChipShapeChip,
+html[data-yag-immersive] ytd-watch-flexy .badge,
+html[data-yag-immersive] ytd-watch-flexy .ytBadgeShapeHost {
+  text-shadow: none;
+}
+
+/* ---- the player: sharp, untouched, slightly rounded -------------------- */
+
+html[data-yag-immersive] ytd-watch-flexy:not([theater]):not([fullscreen]) #ytd-player.ytd-watch-flexy {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* YouTube's own (much weaker) ambient mode would stack with ours. */
+html[data-yag-immersive] #cinematics-container,
+html[data-yag-immersive] #cinematics.ytd-watch-flexy {
+  display: none !important;
+}
+
+/* ======================================================================
+   GLOW MODE (halo around the player)
+   The layer is mounted on the watch page root (ytd-watch-flexy), not inside
+   the player, so the player's overflow:hidden containers cannot clip it.
+   ====================================================================== */
+
+/* The watch page root becomes a stacking context. Without this, the layer's
+   z-index:-1 would drop it behind ytd-app's opaque page background. */
+[data-yag-host] {
+  isolation: isolate;
+}
+
+/* Only set when the host was position:static, so the layer can anchor to it. */
+[data-yag-host][data-yag-pos] {
+  position: relative;
+}
+
+[data-yag-host] #cinematics-container {
+  display: none !important;
+}
+
+#yag-layer.yag-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;              /* behind the player and all page content */
+  /* Clip sideways only, so the glow never causes a horizontal scrollbar,
+     but may still rise behind the masthead. */
+  overflow: visible;
+  overflow-x: clip;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#yag-layer.yag-glow.yag-show {
+  opacity: var(--yag-opacity, 0.9);
+}
+
+/* On a white page the same glow reads much heavier; tone it down a little. */
+html:not([dark]) #yag-layer.yag-glow.yag-show {
+  opacity: calc(var(--yag-opacity, 0.9) * 0.75);
+}
+
+.yag-glow #yag-canvas {
+  transform-origin: 0 0;
+  /* width / height / transform are set from content.js */
+}
